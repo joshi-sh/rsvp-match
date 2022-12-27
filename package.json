@@ -16,5 +16,8 @@
     "url": "https://github.com/joshi-sh/rsvp-match/issues"
   },
   "homepage": "https://github.com/joshi-sh/rsvp-match#readme",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "eslint": "^8.28.0"
+  }
 }
