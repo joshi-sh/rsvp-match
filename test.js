@@ -1,20 +1,20 @@
 import test from 'ava';
 import * as match from './match.js';
 
-
 // Tests that are supposed to fail
 [
     {name: 'Bad pattern', object: {x: 0}, pattern: null, expected: match.NULL_OR_UNDEFINED},
     {name: 'Objects with different types', object: 0, pattern: false, expected: match.NO_MATCH},
     {name: 'Number against different', object: 1, pattern: 2, expected: match.NO_MATCH},
     {name: 'Boolean against different', object: true, pattern: false, expected: match.NO_MATCH},
-    {name: 'String against different', object: 'foo', pattern: 'bar', expected: match.NO_MATCH}
+    {name: 'String against different', object: 'foo', pattern: 'bar', expected: match.NO_MATCH},
+    {name: 'Array that does not match', object: 0, pattern: [0], expected: match.NO_MATCH}
 ].forEach(({name, object, pattern, expected}) => {
-    test(name, t => {
+    test(name, t => 
       match.match(pattern, object).
         then(t.fail).
-        else(r => t.deepEqual(r, expected));
-    });
+        catch(r => t.deepEqual(r, expected))
+    );
 });
 
 // Tests that are supposed to pass
@@ -26,11 +26,11 @@ import * as match from './match.js';
     {name: 'Number against same', object: 1, pattern: 1, expected: 1},
     {name: 'String against same', object: 'foo', pattern: 'foo', expected: 'foo'}
 ].forEach(({name, pattern, object, expected}) => {
-    test(name, t => {
+    test(name, t => 
       match.match(pattern, object).
         then(r => t.deepEqual(r, expected)).
-        else(t.fail);
-    });
+        catch(t.fail)
+    );
 });
 
 //Array Tests
@@ -40,12 +40,12 @@ import * as match from './match.js';
     {name: 'Array of primitives against superset', object: [0, true, '', false], pattern: [0, true, ''], expected: [0, true, '']},
     {name: 'Array of primitives against different', object: [0], pattern: ['foo'], expected: [match.NO_MATCH]}
 ].forEach(({name, pattern, object, expected})=>{
-    test(name, t=>{
+    test(name, t=>
       match.match(pattern, object).
         then(results => results.forEach((result, index) => {
           result.
             then(r => t.deepEqual(r, expected[index])).
-            else(r => t.deepEqual(r, expected[index]));
-        })).else(t.fail);
-    });
+            catch(r => t.deepEqual(r, expected[index]));
+        })).catch(t.fail)
+    );
 });

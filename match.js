@@ -2,26 +2,22 @@ function Wildcard(){
     return this;
 }
 
-function Variable(name){
-    this.bind = function(object){
-        return {[name]: object};
-    };
+class Variable {
+    constructor(name) {
+        this.bind = function (object) {
+            return { [name]: object };
+        };
+    }
 }
 
 const _ = new Wildcard();
 
 const accept = function(value){
-    return {
-        then(f){ return accept(f(value));},
-        else(_f){return this;}
-    };
+    return Promise.resolve(value);
 };
 
 const reject = function(error){
-    return {
-        then(_f){return this;},
-        else(f){return reject(f(error))}
-    };
+    return Promise.reject(error);
 }
 
 const createEmptyBindings = () => accept({});
@@ -70,7 +66,7 @@ const match = function(pattern, object){
     else if(Array.isArray(pattern) && Array.isArray(object)){
         return accept(Array.prototype.map.call(pattern, (value, index) => match(value, object[index])));
     }
-    else if (typeof(pattern) === 'object'){
+    else if (!Array.isArray(pattern) && typeof(pattern) === 'object'){
         let entries = Object.entries(pattern);
         return accept(Object.fromEntries(entries.
           map(([key, value]) => [key, match(value, object[key])])));
