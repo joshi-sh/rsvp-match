@@ -10,11 +10,30 @@ function Variable(name){
 
 const _ = new Wildcard();
 
+const accept = function(value){
+    return {
+        then(f){ return accept(f(value));},
+        else(_f){return this;}
+    };
+};
+
+const reject = function(error){
+    return {
+        then(_f){return this;},
+        else(f){return reject(f(error))}
+    };
+}
+
+const createEmptyBindings = () => accept({});
+
+const NULL_OR_UNDEFINED = "NULL_OR_UNDEFINED";
+const NO_MATCH = "NO_MATCH";
+
 
 /*
  *  Match pattern with object to create a set of bindings, or false if could not match
- *  Fails if pattern is null or undefined
- *  Fails if object is undefined
+ *  Fails if pattern is null or undefined (error message NULL_OR_UNDEFINED)
+ *  Fails if object is undefined (error message NO_MATCH)
  *  Pattern can be:
  *    * Underscore: Matches anything that is not `undefined`, creates no bindings
  *    * Variable: Always matches, binds the value to that name
@@ -28,34 +47,35 @@ const _ = new Wildcard();
  */
 const match = function(pattern, object){
     if(pattern === null || pattern === undefined || object === undefined){
-        return false;
+        return reject(NULL_OR_UNDEFINED);
     }
     else if(pattern instanceof Wildcard){
-        return {};
+        return createEmptyBindings();
     }
     else if(pattern instanceof Variable){
-        return pattern.bind(object);
+        return accept(pattern.bind(object));
     }
-    else if(typeof(pattern) === 'number' && typeof(object) === 'number' && Number.isNaN(pattern) && Number.isNaN(object)){
+    else if(Number.isNaN(pattern) && Number.isNaN(object)){
         // Special handling for NaN
-        return {};
+        return accept(Number.NaN);
     }
-    else if(typeof(pattern) === typeof(object) && ['number', 'string', 'boolean'].indexOf(typeof(pattern)) > -1){
-        return pattern === object ? {} : false;
+    else if(typeof(pattern) === typeof(object) && ['number', 'string', 'boolean'].includes(typeof(pattern)) && pattern === object){
+        return accept(object);
     }
     else if(pattern instanceof RegExp && typeof(object) === 'string'){
         const match = object.match(pattern);
-        if(match) return match;
+        if(match) return accept(match);
+        return reject(NO_MATCH);
     }
     else if(Array.isArray(pattern) && Array.isArray(object)){
-        return Array.prototype.map.call(pattern, (value, index) => match(value, object[index]));
+        return accept(Array.prototype.map.call(pattern, (value, index) => match(value, object[index])));
     }
     else if (typeof(pattern) === 'object'){
         let entries = Object.entries(pattern);
-        return Object.fromEntries(entries.
-          map(([key, value]) => [key, match(value, object[key])]));
+        return accept(Object.fromEntries(entries.
+          map(([key, value]) => [key, match(value, object[key])])));
     }
-    else return false;
+    else return reject(NO_MATCH);
 };
 
-export {_, Variable, match};
+export {_, Variable, match, NULL_OR_UNDEFINED, NO_MATCH};
