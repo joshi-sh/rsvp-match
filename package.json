@@ -1,6 +1,6 @@
 {
   "name": "rsvp-match",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Object matching library for RSVP language",
   "main": "match.js",
   "type": "module",
@@ -17,9 +17,8 @@
     "url": "https://github.com/joshi-sh/rsvp-match/issues"
   },
   "homepage": "https://github.com/joshi-sh/rsvp-match#readme",
-  "private": true,
   "devDependencies": {
-    "ava": "^5.1.0",
-    "eslint": "^8.28.0"
+    "ava": "^6.4.0",
+    "eslint": "^9.33.0"
   }
 }
